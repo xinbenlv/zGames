@@ -29,7 +29,10 @@ zGames/
 ## 加一款新游戏
 
 1. 新建 `g/<game-name>.htm`。名字只用小写字母、数字和连字符。
-2. 在 `g/index.html` 的列表里加一项。
+2. 在 `g/index.html` 的 `GAMES` 数组里加一项，再在同一个文件里写一个预览函数
+   `(ctx, 宽, 高, 秒)`，它负责画卡片上那块会动的画面。字段含义见数组上方的注释。
+   还没做完的游戏把 `status` 写成 `wip`（显示但不能点）或 `planned`
+   （默认不显示，打开 `zzn.im/g/?planned` 才看得到）。
 3. 本地预览：`npx serve .` 后打开 `http://localhost:3000/g/<game-name>.htm`。
 
 ## 约定

@@ -1,30 +1,410 @@
 <!doctype html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>zGames</title>
-<meta name="description" content="Single-player web games by Zainan Victor Zhou. 单机网页游戏。">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>zGames · 打开就能玩的单文件小游戏</title>
+<meta name="description" content="打开就能玩的原创 HTML5 小游戏合集。每款游戏只有一个 .htm 文件，不用下载，不用登录。Tiny single-file HTML5 games by Zainan Victor Zhou.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="zGames · 打开就能玩的单文件小游戏">
+<meta property="og:description" content="每款游戏只有一个 .htm 文件，不用下载，不用登录，手机电脑都能开。">
+<meta property="og:url" content="https://zzn.im/g/">
+<meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15130f" media="(prefers-color-scheme: dark)">
 <style>
-  :root { --bg:#0e1116; --fg:#e6e6e6; --muted:#8b949e; --card:#161b22; --accent:#f0b429; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui, sans-serif; }
-  main { max-width:720px; margin:0 auto; padding:48px 16px; }
-  h1 { margin:0 0 8px; }
-  p { color:var(--muted); margin:0 0 32px; }
-  ul { list-style:none; padding:0; display:grid; gap:12px; }
-  a { display:block; padding:16px 20px; background:var(--card); border-radius:10px; color:var(--fg); text-decoration:none; }
-  a:hover { outline:2px solid var(--accent); }
-  small { color:var(--muted); display:block; }
+  :root {
+    --bg:#f4efe6; --ink:#1d1b18; --muted:#6b655c; --card:#fffdf8;
+    --line:#1d1b18; --shadow:#1d1b18; --brand:#d1495b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#15130f; --ink:#f1ebdf; --muted:#a39b8d; --card:#211e19; --line:#5a5347; --shadow:#000; }
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.6 system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap {
+    max-width:1120px; margin:0 auto;
+    padding:40px max(16px, env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  .mono { font-family:ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-variant-numeric:tabular-nums; }
+
+  header { margin-bottom:28px; }
+  .brand { font-size:clamp(40px, 11vw, 72px); font-weight:900; line-height:1; letter-spacing:-.03em; margin:0; }
+  .brand i { font-style:normal; color:var(--brand); }
+  .tagline { font-size:clamp(18px, 4.6vw, 24px); font-weight:700; margin:14px 0 2px; }
+  .en { color:var(--muted); margin:0 0 16px; font-size:14px; }
+  .facts { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px; }
+  .facts li { border:1.5px solid var(--line); border-radius:999px; padding:3px 12px; font-size:13px; white-space:nowrap; }
+
+  .shelf-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:0 0 14px; }
+  .shelf-head h2 { font-size:15px; margin:0; letter-spacing:.08em; }
+  .shelf-head span { color:var(--muted); font-size:13px; }
+  .shelf { display:grid; gap:22px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+
+  /* 一张卡片 = 一盒卡带：上面是会动的「屏幕」，下面是标签 */
+  .cart {
+    display:flex; flex-direction:column; overflow:hidden;
+    background:var(--card); color:inherit; text-decoration:none;
+    border:2px solid var(--line); border-radius:14px; box-shadow:5px 5px 0 var(--shadow);
+    transition:transform .12s, box-shadow .12s;
+  }
+  a.cart:hover { transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--shadow); }
+  a.cart:active { transform:translate(3px,3px); box-shadow:2px 2px 0 var(--shadow); }
+  a.cart:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+  .screen { position:relative; aspect-ratio:16/10; background:#111; border-bottom:2px solid var(--line); }
+  .screen canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .stamp {
+    position:absolute; top:10px; right:10px; padding:2px 10px; border-radius:6px;
+    background:#fffdf8; color:#1d1b18; border:2px solid #1d1b18; font-size:13px; font-weight:700; transform:rotate(3deg);
+  }
+  .stamp.new { background:var(--accent); color:#fff; }
+  .label { flex:1; display:flex; flex-direction:column; gap:8px; padding:12px 16px 16px; border-top:6px solid var(--accent); }
+  .title { display:flex; align-items:baseline; gap:10px; }
+  .title .no { color:var(--muted); font-size:13px; }
+  .title strong { font-size:21px; line-height:1.3; }
+  .title em { font-style:normal; color:var(--muted); font-size:14px; }
+  .blurb { margin:0; color:var(--muted); font-size:14px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; font-size:12px; }
+  .chips span { background:color-mix(in srgb, var(--ink) 8%, transparent); border-radius:6px; padding:1px 8px; }
+  .chips .warn { background:color-mix(in srgb, var(--brand) 18%, transparent); }
+  .go {
+    margin-top:auto; min-height:44px; display:flex; align-items:center; justify-content:center;
+    border-radius:10px; background:var(--ink); color:var(--bg); font-weight:700;
+  }
+  .cart.off .go { background:none; color:var(--muted); border:1.5px dashed var(--line); font-weight:400; }
+  .slot {
+    min-height:200px; display:grid; place-content:center; gap:4px; text-align:center; padding:24px;
+    border:2px dashed var(--line); border-radius:14px; color:var(--muted); text-decoration:none; font-size:14px;
+  }
+  .slot b { color:var(--ink); font-size:16px; }
+  .slot:hover b { text-decoration:underline; }
+
+  footer { margin-top:44px; padding-top:18px; border-top:1.5px solid var(--line); color:var(--muted); font-size:13px; }
+  footer a { color:inherit; }
+  @media (prefers-reduced-motion: reduce) { .cart { transition:none; } }
 </style>
 </head>
 <body>
-<main>
-  <h1>zGames</h1>
-  <p>单机网页游戏 · Single-player web games</p>
-  <ul>
-    <li><a href="/g/strike">Strike<small>第一人称射击 · First-person shooter</small></a></li>
-    <li><a href="/g/tenka">天下 Tenka<small>战国策略 · Sengoku strategy</small></a></li>
-  </ul>
-</main>
+<div class="wrap">
+  <header>
+    <p class="brand"><i>z</i>Games</p>
+    <h1 class="tagline">打开就能玩的单文件小游戏</h1>
+    <p class="en">Tiny single-file HTML5 games. Open and play.</p>
+    <ul class="facts">
+      <li>一款游戏 = 一个 .htm 文件</li>
+      <li>不用下载安装</li>
+      <li>不用登录</li>
+      <li>不收集数据</li>
+    </ul>
+  </header>
+
+  <main>
+    <div class="shelf-head"><h2>游戏货架</h2><span id="count"></span></div>
+    <div class="shelf" id="shelf"></div>
+    <noscript>
+      <p><a href="/g/strike">货场突袭 Strike</a>：第一人称射击，需要键盘和鼠标。</p>
+    </noscript>
+  </main>
+
+  <footer>
+    每款游戏的全部代码和素材都在一个文件里，可以直接「查看网页源代码」。
+    源码在 <a href="https://github.com/xinbenlv/zGames">GitHub</a>
+    · 作者 <a href="https://zzn.im">Zainan Victor Zhou</a>
+  </footer>
+</div>
+
+<script>
+'use strict';
+/* ───────────────────────── 游戏清单 ─────────────────────────
+   加一款游戏：在 GAMES 里加一项，再在文件下方写一个同名的预览函数。
+   status  live = 可玩；wip = 制作中（显示但不能点）；
+           planned = 计划中（默认不显示，网址加 ?planned 才显示）
+   input   touch = 手机可玩；keys = 需要键盘鼠标；both = 两者都行
+   preview 预览函数 (ctx, 宽, 高, 秒)。它只根据时间画一帧，不保存状态。
+   still   系统开启「减少动态效果」时显示的那一帧所在的秒数            */
+const GAMES = [
+  { slug:'strike', title:'货场突袭', en:'Strike', genre:'第一人称射击',
+    blurb:'肃清货场里的全部武装分子，限时 3 分钟。',
+    input:'keys', size:'77 KB', accent:'#d9743a', status:'live', added:'2026-11-13', preview:strike, still:1.2 },
+  { slug:'tenka', title:'天下', en:'Tenka', genre:'战国策略',
+    blurb:'战国策略游戏。', accent:'#b23a2e', status:'wip', preview:tenka, still:1 },
+  { title:'深海打捞', genre:'摆钩抓取', blurb:'潜水钟放出机械爪，顶着洋流打捞沉船货物。',
+    input:'touch', accent:'#1f7a9c', status:'planned', preview:salvage, still:3.2 },
+  { title:'藤蔓园丁', genre:'格子炸弹', blurb:'埋下种子，藤蔓两秒后沿着格子蔓延。',
+    input:'touch', accent:'#4f9d4a', status:'planned', preview:vines, still:2.9 },
+  { title:'沉船下行', genre:'固定数值爬塔', blurb:'一层层往下走，算好氧气、照明和工具耐久。',
+    input:'touch', accent:'#7a5cc2', status:'planned', preview:descent, still:1.2 },
+];
+const NEW_DAYS = 30;      // 上线多少天以内显示「新」
+const ISSUES = 'https://github.com/xinbenlv/zGames/issues';
+
+/* ───────────────────────── 渲染货架 ───────────────────────── */
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const showPlanned = new URLSearchParams(location.search).has('planned');
+const touchOnly = matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches;
+const STATUS_RANK = { live:0, wip:2, planned:3 };
+// 可玩的排前面；只有触屏的设备上，需要键鼠的游戏排到其他可玩游戏后面
+const rank = g => STATUS_RANK[g.status] + (touchOnly && g.input === 'keys' ? 1 : 0);
+const shown = GAMES.map((g, i) => ({ ...g, no:i + 1 }))
+  .filter(g => g.status !== 'planned' || showPlanned)
+  .sort((a, b) => rank(a) - rank(b) || a.no - b.no);
+
+const views = [];
+const shelf = document.getElementById('shelf');
+for (const g of shown) {
+  const live = g.status === 'live';
+  const card = el(live ? 'a' : 'div', 'cart' + (live ? '' : ' off'));
+  if (live) card.href = '/g/' + g.slug;
+  card.style.setProperty('--accent', g.accent);
+
+  const screen = el('div', 'screen');
+  const canvas = el('canvas');
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', g.title + '的画面预览');
+  screen.append(canvas);
+  const isNew = live && g.added && (Date.now() - new Date(g.added)) / 864e5 < NEW_DAYS;
+  if (!live) screen.append(el('span', 'stamp', g.status === 'wip' ? '制作中' : '计划中'));
+  else if (isNew) screen.append(el('span', 'stamp new', '新'));
+
+  const label = el('div', 'label');
+  const title = el('div', 'title');
+  title.append(el('span', 'no mono', String(g.no).padStart(2, '0')), el('strong', '', g.title));
+  if (g.en) title.append(el('em', '', g.en));
+  const chips = el('div', 'chips');
+  chips.append(el('span', '', g.genre));
+  if (g.input === 'keys') chips.append(el('span', touchOnly ? 'warn' : '', '需要键盘鼠标'));
+  if (g.input === 'touch' || g.input === 'both') chips.append(el('span', '', '手机可玩'));
+  if (g.size) chips.append(el('span', 'mono', '单文件 ' + g.size));
+  const go = el('span', 'go', live ? (touchOnly && g.input === 'keys' ? '请用电脑打开 →' : '开始玩 →') : (g.status === 'wip' ? '制作中' : '计划中'));
+  label.append(title, el('p', 'blurb', g.blurb), chips, go);
+
+  card.append(screen, label);
+  shelf.append(card);
+  views.push({ canvas, ctx:canvas.getContext('2d'), draw:g.preview, still:g.still || 1, w:0, h:0, visible:false });
+}
+const slot = el('a', 'slot');
+slot.href = ISSUES;
+slot.append(el('b', '', '空卡槽'), el('span', '', '下一款正在做。想玩什么？来 GitHub 提建议 →'));
+shelf.append(slot);
+
+const nLive = shown.filter(g => g.status === 'live').length, nWip = shown.filter(g => g.status === 'wip').length;
+document.getElementById('count').textContent = nLive + ' 款可玩' + (nWip ? ' · ' + nWip + ' 款制作中' : '');
+
+/* ───────────────────────── 预览动画的调度 ─────────────────────────
+   全页只有一个 requestAnimationFrame 循环，只画屏幕内的卡片，约 30 帧每秒。
+   页面切到后台、或者系统开启「减少动态效果」时停止，只留一帧静态画面。   */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+const byCanvas = new Map(views.map(v => [v.canvas, v]));
+function fit(v) {
+  const r = v.canvas.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+  v.w = r.width; v.h = r.height;
+  v.canvas.width = Math.round(r.width * d); v.canvas.height = Math.round(r.height * d);
+  v.ctx.setTransform(d, 0, 0, d, 0, 0);
+}
+function paint(v, t) { if (v.w && v.h) { v.ctx.clearRect(0, 0, v.w, v.h); v.draw(v.ctx, v.w, v.h, t); } }
+let raf = 0, last = 0;
+function frame(ms) {
+  raf = 0;
+  if (document.hidden || reduce.matches || !views.some(v => v.visible)) return;
+  if (ms - last >= 33) { last = ms; for (const v of views) if (v.visible) paint(v, ms / 1000); }
+  raf = requestAnimationFrame(frame);
+}
+function kick() {
+  if (reduce.matches) { for (const v of views) paint(v, v.still); return; }
+  if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
+}
+const ro = new ResizeObserver(es => {
+  for (const e of es) { const v = byCanvas.get(e.target); fit(v); paint(v, reduce.matches ? v.still : performance.now() / 1000); }
+});
+const io = new IntersectionObserver(es => {
+  for (const e of es) byCanvas.get(e.target).visible = e.isIntersecting;
+  kick();
+}, { rootMargin:'80px' });
+for (const v of views) { ro.observe(v.canvas); io.observe(v.canvas); }
+document.addEventListener('visibilitychange', kick);
+reduce.addEventListener('change', kick);
+
+/* ───────────────────────── 各游戏的预览画面 ───────────────────────── */
+const TAU = Math.PI * 2;
+const clamp = x => Math.min(1, Math.max(0, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const ease = x => { x = clamp(x); return x * x * (3 - 2 * x); };
+const hash = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+function poly(c, pts, fill) { c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.fillStyle = fill; c.fill(); }
+function disc(c, x, y, r, fill) { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fillStyle = fill; c.fill(); }
+// 沿关键帧 [秒, x, y] 做线性插值
+function along(keys, p) {
+  for (let i = 1; i < keys.length; i++) if (p <= keys[i][0]) {
+    const a = keys[i - 1], b = keys[i], k = (p - a[0]) / (b[0] - a[0]);
+    return [lerp(a[1], b[1], k), lerp(a[2], b[2], k)];
+  }
+  const z = keys[keys.length - 1]; return [z[1], z[2]];
+}
+
+// 货场突袭：黄昏的集装箱货场，准星追着冒头的人影开火
+function strike(c, w, h, t) {
+  const cx = w / 2, hy = h * .5;
+  const sky = c.createLinearGradient(0, 0, 0, hy); sky.addColorStop(0, '#18243a'); sky.addColorStop(1, '#d9824a');
+  c.fillStyle = sky; c.fillRect(0, 0, w, hy);
+  disc(c, cx, hy, h * .13, '#f6c77a');
+  c.fillStyle = '#4a4640'; c.fillRect(0, hy, w, h - hy);
+  c.lineWidth = 1; c.strokeStyle = 'rgba(255,255,255,.08)';
+  for (let i = -4; i <= 4; i++) { c.beginPath(); c.moveTo(cx + i * w * .02, hy); c.lineTo(cx + i * w * .3, h); c.stroke(); }
+  const paints = [['#a8443a', '#2f6d8c', '#c39a2b'], ['#3c7d5a', '#b5562f', '#44597a']], depth = [0, .5, .8, 1];
+  [-1, 1].forEach((side, s) => {
+    const X = k => cx + side * lerp(w * .5, w * .13, k), T = k => lerp(hy - h * .62, hy - h * .1, k), B = k => lerp(hy + h * .5, hy + h * .06, k);
+    for (let i = 0; i < 3; i++) {
+      const a = depth[i], b = depth[i + 1] - .015;
+      poly(c, [[X(a), T(a)], [X(b), T(b)], [X(b), B(b)], [X(a), B(a)]], paints[s][i]);
+      c.strokeStyle = 'rgba(0,0,0,.2)';
+      for (let j = 1; j < 5; j++) { const k = lerp(a, b, j / 5); c.beginPath(); c.moveTo(X(k), T(k)); c.lineTo(X(k), B(k)); c.stroke(); }
+    }
+  });
+  const cyc = 2.6, n = Math.floor(t / cyc), p = t / cyc - n;
+  const spots = [-.08, .07, -.02, .1, -.11, .03], sx = i => spots[((i % 6) + 6) % 6] * w;
+  const tx = cx + sx(n), base = hy + h * .05, th = h * .17;
+  const up = ease(p / .12) * (1 - ease((p - .6) / .1));
+  if (up > .01) {
+    c.save(); c.translate(tx, base); c.scale(1, up); c.fillStyle = '#14161b';
+    c.fillRect(-th * .16, -th * .62, th * .32, th * .62); disc(c, 0, -th * .78, th * .15, '#14161b'); c.restore();
+  }
+  const fire = p > .6 && p < .68, kick = fire ? 1 : 0;
+  const ax = cx + lerp(sx(n - 1), sx(n), ease((p - .1) / .4)), ay = hy - h * .03 - kick * h * .015 + Math.sin(t * 2.1) * h * .004;
+  const gx = w * .64 + (ax - cx) * .25, gy = h * .72 + kick * h * .03;
+  poly(c, [[gx, h + 2], [gx + w * .15, h + 2], [gx - w * .02, gy], [gx - w * .055, gy]], '#0e1014');
+  if (fire) { disc(c, gx - w * .038, gy - h * .01, h * .06, '#ffd27a'); disc(c, gx - w * .038, gy - h * .01, h * .03, '#fff'); disc(c, tx, ay, h * .02, '#ffd27a'); }
+  c.strokeStyle = '#fff'; c.lineWidth = 1.5;
+  const r1 = h * .012 + kick * h * .012, r2 = r1 + h * .024;
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { c.beginPath(); c.moveTo(ax + dx * r1, ay + dy * r1); c.lineTo(ax + dx * r2, ay + dy * r2); c.stroke(); }
+}
+
+// 天下：三家势力在六边形地图上此消彼长
+function tenka(c, w, h, t) {
+  c.fillStyle = '#e6dcc3'; c.fillRect(0, 0, w, h);
+  const cols = 9, rows = 5, R = Math.min(w / (1.5 * (cols - 1) + 2), h / (1.732 * (rows + .5))) * .98;
+  const ox = (w - R * (1.5 * (cols - 1) + 2)) / 2 + R, oy = (h - 1.732 * R * (rows + .5)) / 2 + .866 * R;
+  const clans = [{ x:.18, y:.3, col:'#b23a2e' }, { x:.8, y:.28, col:'#2d5d86' }, { x:.5, y:.85, col:'#c29a2c' }];
+  clans.forEach((k, i) => { k.r = .13 * Math.sin(t * .7 + i * 2.1); });
+  for (let q = 0; q < cols; q++) for (let r = 0; r < rows; r++) {
+    if (hash(q, r) < .14) continue;                       // 留几格空白当作海
+    const x = ox + q * 1.5 * R, y = oy + (r + (q % 2) * .5) * 1.732 * R;
+    let best = clans[0], bd = 1e9;
+    for (const k of clans) { const d = Math.hypot(x / w - k.x, (y / h - k.y) * h / w) - k.r; if (d < bd) { bd = d; best = k; } }
+    c.beginPath();
+    for (let i = 0; i < 6; i++) c.lineTo(x + R * .92 * Math.cos(i * TAU / 6), y + R * .92 * Math.sin(i * TAU / 6));
+    c.closePath(); c.fillStyle = best.col; c.fill();
+  }
+  for (const k of clans) {                                // 各家本城的旗
+    const x = k.x * w, y = k.y * h, wave = Math.sin(t * 3 + k.x * 9) * R * .08;
+    c.fillStyle = '#1d1b18'; c.fillRect(x - 1, y - R * .9, 2, R * 1.1);
+    poly(c, [[x, y - R * .9], [x + R * .62, y - R * .66 + wave], [x, y - R * .4]], '#fff8e8');
+  }
+}
+
+// 深海打捞：机械爪左右摆，看准了放下去，把货物拉回船上
+function salvage(c, w, h, t) {
+  const cx = w / 2, sea = h * .12, oy = h * .15;
+  c.fillStyle = '#a6d8e8'; c.fillRect(0, 0, w, sea);
+  const g = c.createLinearGradient(0, sea, 0, h); g.addColorStop(0, '#11597d'); g.addColorStop(1, '#051a29');
+  c.fillStyle = g; c.fillRect(0, sea, w, h - sea);
+  for (let i = 0; i < 7; i++) {                           // 气泡
+    const y = h - ((t * (.05 + .05 * hash(i, 2)) + hash(i, 3)) % 1) * (h - sea);
+    disc(c, hash(i, 1) * w, y, h * .008 + hash(i, 4) * h * .008, 'rgba(255,255,255,.22)');
+  }
+  poly(c, [[0, h], [0, h * .93], [w * .3, h * .9], [w * .6, h * .95], [w, h * .91], [w, h]], '#03121d');
+  poly(c, [[cx - w * .13, h * .06], [cx + w * .13, h * .06], [cx + w * .1, oy], [cx - w * .1, oy]], '#efe8d6');
+  c.fillStyle = '#d1495b'; c.fillRect(cx - w * .04, h * .015, w * .07, h * .05);
+  // 摆动的相位跨轮累计，所以每一轮放爪的角度都不一样，而且首尾相接不跳变
+  const Ts = 2.4, cyc = 6, n = Math.floor(t / cyc), p = t - n * cyc, A = .95, om = 1.9;
+  const hold = A * Math.sin(om * (n + 1) * Ts), th = p < Ts ? A * Math.sin(om * (n * Ts + p)) : hold;
+  const L0 = h * .13, L1 = Math.min(h * .66, w * .52);
+  const L = p < Ts ? L0 : p < Ts + 1 ? lerp(L0, L1, ease(p - Ts)) : lerp(L1, L0, clamp((p - Ts - 1.1) / 1.8));
+  const tipx = cx + L * Math.sin(th), tipy = oy + L * Math.cos(th), s = h * .06;
+  const grabbed = p >= Ts + 1, landed = p >= Ts + 2.9;
+  const cargo = (x, y, a) => {
+    c.save(); c.globalAlpha = a; c.translate(x, y);
+    if (n % 3 === 0) { c.fillStyle = '#e3b341'; c.fillRect(-s * .6, -s * .6, s * 1.2, s * 1.2); c.fillStyle = '#b8862b'; c.fillRect(-s * .6, -s * .1, s * 1.2, s * .2); }
+    else if (n % 3 === 1) disc(c, 0, 0, s * .6, '#f5f1e8');
+    else { c.fillStyle = '#a5693f'; c.fillRect(-s * .5, -s * .7, s, s * 1.4); c.fillStyle = '#5b3a24'; c.fillRect(-s * .5, -s * .35, s, s * .12); c.fillRect(-s * .5, s * .25, s, s * .12); }
+    c.restore();
+  };
+  if (!grabbed) cargo(cx + (L1 + s * 1.1) * Math.sin(hold), oy + (L1 + s * 1.1) * Math.cos(hold), ease(p / .6));
+  c.strokeStyle = '#dfe7ea'; c.lineWidth = 2; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(cx, oy); c.lineTo(tipx, tipy); c.stroke();
+  c.save(); c.translate(tipx, tipy); c.rotate(-th);
+  if (grabbed && !landed) cargo(0, s * 1.1, 1);
+  const open = grabbed ? .55 : .95; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(-s * open, s * .9); c.lineTo(-s * open, s * .2); c.lineTo(0, 0); c.lineTo(s * open, s * .2); c.lineTo(s * open, s * .9); c.stroke();
+  c.restore();
+  if (landed) {                                           // 入账
+    const k = (p - Ts - 2.9) / (cyc - Ts - 2.9);
+    c.globalAlpha = 1 - k; c.fillStyle = '#ffd27a'; c.font = '700 ' + h * .09 + 'px system-ui'; c.textAlign = 'center';
+    c.fillText('+' + [50, 120, 30][n % 3], cx + w * .2, oy + h * .12 - k * h * .08); c.globalAlpha = 1;
+  }
+}
+
+// 藤蔓园丁：埋种子、跑开、藤蔓十字蔓延、撞开木箱
+function vines(c, w, h, t) {
+  const C = 9, R = 5, s = Math.min(w / C, h / R), ox = (w - s * C) / 2, oy = (h - s * R) / 2, p = t % 5;
+  c.fillStyle = '#254a2e'; c.fillRect(0, 0, w, h);
+  const box = (q, r, k, fill, rad) => { const m = s * (1 - k) / 2; c.fillStyle = fill; c.beginPath(); c.roundRect(ox + q * s + m, oy + r * s + m, s * k, s * k, s * rad); c.fill(); };
+  for (let q = 0; q < C; q++) for (let r = 0; r < R; r++) {
+    box(q, r, 1, (q + r) % 2 ? '#7fb069' : '#8cbc74', 0);
+    if (q % 2 && r % 2) box(q, r, .86, '#56675d', .16);
+  }
+  const boom = 2.6, back = ease((p - 4.6) / .4);
+  for (const [q, r, hit] of [[2, 2, 1], [6, 2, 1], [4, 0, 1], [0, 0, 0], [8, 2, 0], [2, 4, 0], [0, 3, 0], [8, 0, 0]]) {
+    const k = !hit || p < boom + .15 ? 1 : back;         // 被藤蔓撞开的木箱，轮末再长回来
+    if (k > .02) { box(q, r, .8 * k, '#b98a54', .12); box(q, r, .5 * k, '#d3a56c', .08); }
+  }
+  for (const [q, r, step] of [[4, 2, 0], [3, 2, 1], [5, 2, 1], [4, 1, 1], [4, 3, 1], [2, 2, 2], [6, 2, 2], [4, 0, 2], [4, 4, 2]]) {
+    const k = ease((p - boom - step * .15) / .15) * (1 - ease((p - 3.8) / .3));
+    if (k > .02) { box(q, r, .9 * k, '#2f7d3b', .3); disc(c, ox + (q + .5) * s, oy + (r + .5) * s, s * .16 * k, '#b6e36b'); }
+  }
+  if (p > 1 && p < boom) disc(c, ox + 4.5 * s, oy + 2.5 * s, s * (.2 + .05 * Math.sin(t * 14)), '#f2c14e');
+  const [gq, gr] = along([[0, 4, 4], [.5, 4, 3], [1, 4, 2], [1.5, 4, 3], [2, 4, 4], [2.5, 5, 4], [3, 6, 4], [4, 6, 4], [4.5, 5, 4], [5, 4, 4]], p);
+  const gx = ox + (gq + .5) * s, gy = oy + (gr + .5) * s;
+  disc(c, gx, gy + s * .06, s * .3, '#fff7e6');
+  c.fillStyle = '#d1495b'; c.beginPath(); c.arc(gx, gy - s * .02, s * .34, Math.PI, 0); c.fill();
+}
+
+// 沉船下行：一步一格，打怪、捡钥匙、开门、走到向下的楼梯
+function descent(c, w, h, t) {
+  const C = 8, R = 5, s = Math.min(w / C, h / R), ox = (w - s * C) / 2, oy = (h - s * R) / 2;
+  const raw = t % 6, p = raw > 5.6 ? 0 : raw;             // 最后 0.4 秒在黑幕后面回到开头
+  const map = ['########', '#.m#..p#', '#......>', '#p.#.m.#', '########'];
+  c.fillStyle = '#17141c'; c.fillRect(0, 0, w, h);
+  const mid = (q, r) => [ox + (q + .5) * s, oy + (r + .5) * s];
+  const monster = (q, r, col) => { const [x, y] = mid(q, r); disc(c, x, y, s * .3, col); disc(c, x - s * .1, y - s * .05, s * .05, '#17141c'); disc(c, x + s * .1, y - s * .05, s * .05, '#17141c'); };
+  for (let r = 0; r < R; r++) for (let q = 0; q < C; q++) {
+    const ch = map[r][q], x = ox + q * s, y = oy + r * s, [mx, my] = mid(q, r);
+    c.fillStyle = ch === '#' ? '#2a2533' : '#3b3547'; c.fillRect(x + .5, y + .5, s - 1, s - 1);
+    if (ch === '#') { c.fillStyle = '#383244'; c.fillRect(x + .5, y + .5, s - 1, s * .14); }
+    if (ch === 'm') monster(q, r, '#8f4a63');
+    if (ch === 'p') disc(c, mx, my, s * .16, '#56c1d6');
+    if (ch === '>') { c.fillStyle = '#17141c'; for (let i = 0; i < 4; i++) c.fillRect(x + s * .15 + i * s * .08, y + s * (.2 + i * .17), s * (.7 - i * .08), s * .12); }
+  }
+  if (p < 1.5) monster(3, 2, p > .5 && Math.floor(p * 8) % 2 ? '#fff' : '#d1495b');
+  if (p < 3) { const [x, y] = mid(5, 2); disc(c, x - s * .1, y, s * .13, '#f2c14e'); c.fillStyle = '#f2c14e'; c.fillRect(x, y - s * .04, s * .28, s * .08); }
+  if (p < 3.3) { c.fillStyle = '#8a5a3c'; c.fillRect(ox + 6 * s + s * .1, oy + 2 * s + s * .06, s * .8, s * .88); disc(c, ox + 6.72 * s, oy + 2.5 * s, s * .06, '#f2c14e'); }
+  let [hq] = along([[0, 1, 0], [.5, 2, 0], [1.5, 2, 0], [2, 3, 0], [2.5, 4, 0], [3, 5, 0], [3.5, 5, 0], [4, 6, 0], [4.5, 7, 0]], p);
+  if (p > .5 && p < 1.5) hq += .32 * Math.abs(Math.sin((p - .5) * TAU));   // 两次前冲攻击
+  const gone = ease((p - 4.5) / .6), [hx, hy] = mid(hq, 2);
+  if (gone < .98) { disc(c, hx, hy, s * .3 * (1 - gone), '#f4efe6'); disc(c, hx + s * .12 * (1 - gone), hy - s * .1, s * .08 * (1 - gone), '#ffd27a'); }
+  if (p > .6 && p < 1.5) {
+    const k = ((p - .6) / .45) % 1, [x, y] = mid(3, 2);
+    c.globalAlpha = 1 - k; c.fillStyle = '#fff'; c.font = '700 ' + s * .36 + 'px system-ui'; c.textAlign = 'center';
+    c.fillText('-8', x, y - s * .4 - k * s * .3); c.globalAlpha = 1;
+  }
+  c.fillStyle = '#17141c'; c.fillRect(ox + s * .25, oy + s * .3, s * 2.4, s * .26);   // 氧气条
+  c.fillStyle = '#56c1d6'; c.fillRect(ox + s * .3, oy + s * .35, s * 2.3 * (1 - p / 9), s * .16);
+  const veil = raw < 5.2 ? 0 : raw < 5.6 ? (raw - 5.2) / .4 : 1 - (raw - 5.6) / .4;
+  if (veil > 0) { c.fillStyle = 'rgba(23,20,28,' + veil + ')'; c.fillRect(0, 0, w, h); }
+}
+</script>
 </body>
 </html>
