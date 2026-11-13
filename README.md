@@ -10,7 +10,7 @@ zGames/
 ├── g/
 │   ├── index.html     # 游戏列表页 → zzn.im/g/
 │   ├── strike.htm     # 第一人称射击 → zzn.im/g/strike
-│   └── conquest.htm   # 策略游戏   → zzn.im/g/conquest
+│   └── tianxia.htm    # 策略游戏   → zzn.im/g/tianxia
 ├── vercel.json        # 静态部署 + 去掉 .htm 的 rewrite
 └── AGENTS.md          # 给 AI 代理的约定
 ```
