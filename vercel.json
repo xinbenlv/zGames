@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "framework": null,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/g/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/g",
+      "destination": "/g/index.html"
+    },
+    {
+      "source": "/g/:name([a-z0-9-]+)",
+      "destination": "/g/:name.htm"
+    }
+  ]
+}
